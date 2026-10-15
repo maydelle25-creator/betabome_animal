@@ -77,7 +77,7 @@ label{font-size:13px;font-weight:700;display:block;margin:14px 0 6px}
 <section id="set" class="hid"><h2>設定</h2>
  <label for="nm">認定証に入れるお名前（空欄なら「あなた」）</label><input id="nm" class="nm" maxlength="12" placeholder="あなた">
  <label>テーマカラー</label><div class="chips" id="ac"></div>
- <label>AIとの連携（任意・自分のAPIキー）</label><div class="chips" id="pv"></div><div id="pf"><input id="ak" class="nm" type="password" autocomplete="off" placeholder="APIキー" style="margin-top:10px"><input id="am" class="nm" placeholder="モデル名（空欄なら標準）" style="margin-top:10px"><p class="note" style="text-align:left">キーはこの端末のブラウザの中だけに保存され、AIの提供元以外には送られません。利用料や上限は、あなたのキーにかかります。</p></div><button class="btn g" id="clr">履歴を全部消す</button>
+ <label>AIとの連携（任意・自分のAPIキー）</label><div class="chips" id="pv"></div><div id="pf"><input id="ak" class="nm" type="password" autocomplete="off" placeholder="APIキー" style="margin-top:10px"><input id="am" class="nm" placeholder="モデル名（空欄なら標準）" style="margin-top:10px"><p class="note" style="text-align:left">キーはこの端末のブラウザの中だけに保存され、AIの提供元以外には送られません。利用料や上限は、あなたのキーにかかります。</p><p class="note" style="text-align:left">Geminiは、Googleアカウントがあれば<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>で無料のキーを作れます（カード不要）。無料枠に送った文章は、Googleのサービス改善に使われることがあります。ChatGPT（OpenAI）のAPIキーは有料で、ChatGPTの契約とは別です。</p></div><button class="btn g" id="clr">履歴を全部消す</button>
  <p class="note">動物たちはみんなフィクションです。</p></section>
 </div>
 <nav id="nav"><button data-t="home" aria-current="true"><b>⌂</b>ホーム</button><button data-t="hist"><b>📚</b>履歴</button><button data-t="chars"><b>🌈</b>キャラ紹介</button><button data-t="set"><b>⚙</b>設定</button></nav>
@@ -104,7 +104,7 @@ CH.forEach(c=>c.svg='<img alt="" src="'+c.src+'">');
 const CATS=[['rest',/何もし|寝|休|ゴロゴロ|ぼーっと|サボ|だらだら/],['wake',/起き|早起/],['eat',/食|飲|ご飯|飯|料理|作っ|弁当/],['clean',/掃除|片付|洗|ゴミ|風呂|シャワー|歯|干|整理/],['move',/歩|走|運動|散歩|ジム|筋トレ|ストレッチ|体操|階段/],['reply',/返信|返事|連絡|電話|メール|LINE|話|挨拶|ありがとう/],['work',/仕事|勉強|会議|資料|宿題|締切|提出|残業|読|書|企画|作業/]];
 const cat=t=>(CATS.find(c=>c[1].test(t))||[])[0];
 const EX=['ちゃんと起きた','洗い物をした','何もしてない','返信した'],ACS=[['pink','さくら'],['mikan','みかん'],['mint','ミント'],['sky','ソラ']];
-let ST={name:'',ac:'pink',hist:[],ai:{p:'',key:'',model:''}};try{Object.assign(ST,JSON.parse(localStorage.getItem('hd')||'{}'))}catch(e){}
+let ST={name:'',ac:'pink',hist:[],ai:{p:'gemini',key:'',model:''}};try{Object.assign(ST,JSON.parse(localStorage.getItem('hd')||'{}'))}catch(e){}
 const sv=()=>{try{localStorage.setItem('hd',JSON.stringify(ST))}catch(e){}};
 const pick=a=>a[Math.floor(Math.random()*a.length)],esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 let cur=null,DL=null;
@@ -116,16 +116,16 @@ $('#ex').innerHTML=EX.map(e=>'<button class="chip">'+e+'</button>').join('');
 $('#ex').onclick=e=>{if(e.target.classList.contains('chip')){$('#inp').value=e.target.textContent;upd()}};
 function upd(){$('#n').textContent=$('#inp').value.length;$('#go').disabled=!$('#inp').value.trim()}
 $('#inp').oninput=upd;
-let aiFail=false;
-const DM={gemini:'gemini-2.5-flash',openai:'gpt-4o-mini',claude:'claude-haiku-5-5'};
+let aiFail=false,aiErr='';
+const DM={gemini:'gemini-2.5-flash-lite',openai:'gpt-5-mini',claude:'claude-haiku-5-5'};
 async function callAI(prompt){const a=ST.ai,m=a.model||DM[a.p];let r,j,tx;
- if(a.p==='gemini'){r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent?key='+encodeURIComponent(a.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}})});if(!r.ok)throw 0;j=await r.json();tx=j.candidates[0].content.parts[0].text}
- else if(a.p==='openai'){r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.key},body:JSON.stringify({model:m,messages:[{role:'user',content:prompt}],response_format:{type:'json_object'}})});if(!r.ok)throw 0;j=await r.json();tx=j.choices[0].message.content}
- else{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':a.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:m,max_tokens:1000,messages:[{role:'user',content:prompt}]})});if(!r.ok)throw 0;j=await r.json();tx=j.content[0].text}
+ if(a.p==='gemini'){r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent?key='+encodeURIComponent(a.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}})});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));j=await r.json();tx=j.candidates[0].content.parts[0].text}
+ else if(a.p==='openai'){r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.key},body:JSON.stringify({model:m,messages:[{role:'user',content:prompt}],response_format:{type:'json_object'}})});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));j=await r.json();tx=j.choices[0].message.content}
+ else{r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':a.key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:m,max_tokens:1000,messages:[{role:'user',content:prompt}]})});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));j=await r.json();tx=j.content[0].text}
  return JSON.parse(tx.replace(/^\s*```(?:json)?|```\s*$/g,'').trim())}
 async function gen(t,k){
  const tpl=()=>({msgs:CH.map((c,i)=>[i,(c.say[k]&&Math.random()<.75?pick(c.say[k]):pick(c.say.g)).replace(/\{t\}/g,t)]),title:pick(TT[k]||TT.g),reason:null,fb:1});
- if(!(ST.ai&&ST.ai.p&&ST.ai.key))return tpl();
+ aiErr='';if(!(ST.ai&&ST.ai.p&&ST.ai.key))return tpl();
  try{
   const cs=CH.map((c,i)=>(i+1)+'. '+c.n+'（'+c.ty+'）'+c.d+' 口調の例：'+c.say.g[0].replace(/\{t\}/g,t)).join('\n');
   const r=await callAI(`あなたは「ベタ褒め隊」の8匹のどうぶつです。ユーザーが今日したこと（データ）:「${t}」
@@ -136,7 +136,7 @@ ${cs}
 出力はJSONのみ：{"comments":["…"（8個）],"title":"…","reason":"…"}`);
   if(r&&Array.isArray(r.comments)&&r.comments.length>=8&&r.comments.slice(0,8).every(x=>typeof x==='string'&&x))
    return{msgs:r.comments.slice(0,8).map((x,i)=>[i,x]),title:String(r.title||'').slice(0,16)||pick(TT[k]||TT.g),reason:typeof r.reason==='string'&&r.reason?r.reason.slice(0,70):null};
- }catch(e){}
+ }catch(e){aiErr=String(e&&e.message||e).slice(0,200)}
  return tpl()}
 $('#go').onclick=async()=>{const t=$('#inp').value.trim().replace(/[。.！!]+$/,'');if(!t)return;
  $('#go').disabled=true;$('#go').textContent='どうぶつたちが集まってるよ…';
@@ -147,7 +147,7 @@ $('#go').onclick=async()=>{const t=$('#inp').value.trim().replace(/[。.！!]+$/
  $('#inp').value='';upd();$('#go').textContent='ほめてもらう！';praise(cur)};
 $('#more').onclick=async()=>{const b=$('#more');b.disabled=true;b.textContent='考え中…';
  const g=await gen(cur.t,cur.cat);aiFail=!!(g.fb&&ST.ai.p&&ST.ai.key);cur.msgs=g.msgs.sort(()=>Math.random()-.5);cur.title=g.title;cur.reason=g.reason;sv();praise(cur);b.disabled=false;b.textContent='もっとほめて'};
-function praise(e){cur=e;$('#pl').innerHTML=e.msgs.map(([i,m],k)=>'<div class="row" style="animation-delay:'+k*.5+'s"><div class="av">'+CH[i].svg+CH[i].n+'</div><div class="bub">'+esc(m)+'</div></div>').join('');$('#aiNote').hidden=!aiFail;show('praise')}
+function praise(e){cur=e;$('#pl').innerHTML=e.msgs.map(([i,m],k)=>'<div class="row" style="animation-delay:'+k*.5+'s"><div class="av">'+CH[i].svg+CH[i].n+'</div><div class="bub">'+esc(m)+'</div></div>').join('');$('#aiNote').hidden=!aiFail;$('#aiNote').textContent='AIにつながらなかったので、固定のセリフで表示しています。設定のキーとモデル名を確認してください。'+(aiErr?'［'+aiErr+'］':'');show('praise')}
 $('#toc').onclick=()=>{$('#cv').innerHTML='<canvas></canvas>';$('#sn').hidden=true;draw($('#cv canvas'),cur);show('cert')};
 $('#back').onclick=()=>{$('#inp').value='';upd();show('home')};
 const reiwa=d=>'令和'+(d.getFullYear()-2018)+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
@@ -197,7 +197,7 @@ $('#cl').innerHTML=CH.map(c=>'<div class="cd">'+c.svg+'<div><b>'+c.n+'</b> <span
 $('#nm').value=ST.name;$('#nm').oninput=()=>{ST.name=$('#nm').value.trim();sv()};
 function ra(){document.documentElement.dataset.ac=ST.ac;$('#ac').innerHTML=ACS.map(a=>'<button class="chip" data-a="'+a[0]+'" aria-pressed="'+(ST.ac===a[0])+'">'+a[1]+'</button>').join('')}
 $('#ac').onclick=e=>{if(e.target.dataset.a){ST.ac=e.target.dataset.a;sv();ra()}};ra();
-const PV=[['','使わない'],['gemini','Gemini'],['openai','OpenAI'],['claude','Claude']];
+const PV=[['gemini','Gemini（無料キーあり）'],['openai','ChatGPT（OpenAI・有料）'],['claude','Claude'],['','使わない']];
 function rpv(){$('#pv').innerHTML=PV.map(a=>'<button class="chip" data-p="'+a[0]+'" aria-pressed="'+(ST.ai.p===a[0])+'">'+a[1]+'</button>').join('');$('#pf').classList.toggle('hid',!ST.ai.p);$('#ak').value=ST.ai.key;$('#am').value=ST.ai.model;$('#am').placeholder='モデル名（空欄なら '+(DM[ST.ai.p]||'')+'）'}
 $('#pv').onclick=e=>{if(e.target.dataset.p!==undefined){ST.ai.p=e.target.dataset.p;sv();rpv()}};
 $('#ak').oninput=()=>{ST.ai.key=$('#ak').value.trim();sv()};$('#am').oninput=()=>{ST.ai.model=$('#am').value.trim();sv()};rpv();
