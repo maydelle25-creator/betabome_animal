@@ -1,0 +1,17 @@
+{
+  "name": "ベタ褒め隊",
+  "short_name": "ベタ褒め隊",
+  "description": "ベタ褒めしてくれる動物たちのアプリ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fbf6f3",
+  "theme_color": "#bf7886",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "betabome_animal.PNG",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
