@@ -11,10 +11,10 @@
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#2a2125;--card:#352a2f;--ink:#f6e9e6;--mute:#b9a3a8;--line:#4b3b41;--soft:#4a3640;--accink:#2a2125}}
 :root[data-theme="dark"]{--bg:#2a2125;--card:#352a2f;--ink:#f6e9e6;--mute:#b9a3a8;--line:#4b3b41;--soft:#4a3640;--accink:#2a2125}
-html[data-ac="mint"]{--acc:#5fb89a;--soft:#e2f5ee}
-html[data-ac="sky"]{--acc:#6aa6e8;--soft:#e4f0fc}
-html[data-ac="mikan"]{--acc:#f28c1a;--soft:#ffe8cc}
-@media (prefers-color-scheme:dark){html[data-ac="mint"]{--soft:#2f4a44}html[data-ac="sky"]{--soft:#2f405a}html[data-ac="mikan"]{--soft:#59402a}}
+html[data-ac="mint"]{--acc:#5fb89a;--soft:#e2f5ee;--bg:#f2f8f5;--line:#dcebe3}
+html[data-ac="sky"]{--acc:#6aa6e8;--soft:#e4f0fc;--bg:#f1f6fb;--line:#dbe6f1}
+html[data-ac="mikan"]{--acc:#f28c1a;--soft:#ffe8cc;--bg:#fcf6ee;--line:#f1e3d0}
+@media (prefers-color-scheme:dark){html[data-ac="mint"]:not([data-theme="light"]){--soft:#2f4a44;--bg:#1d2926;--card:#293632;--line:#364a44}html[data-ac="sky"]:not([data-theme="light"]){--soft:#2f405a;--bg:#1c2433;--card:#273148;--line:#344560}html[data-ac="mikan"]:not([data-theme="light"]){--soft:#59402a;--bg:#2a231c;--card:#352c23;--line:#4b3d2d}}
 *{box-sizing:border-box}
 html{color-scheme:light dark}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f);display:flex;justify-content:center;line-height:1.7}
@@ -77,7 +77,7 @@ label{font-size:13px;font-weight:700;display:block;margin:14px 0 6px}
 <section id="set" class="hid"><h2>設定</h2>
  <label for="nm">認定証に入れるお名前（空欄なら「あなた」）</label><input id="nm" class="nm" maxlength="12" placeholder="あなた">
  <label>テーマカラー</label><div class="chips" id="ac"></div>
- <label>AIとの連携（任意・自分のAPIキー）</label><div class="chips" id="pv"></div><div id="pf"><input id="ak" class="nm" type="password" autocomplete="off" placeholder="APIキー" style="margin-top:10px"><input id="am" class="nm" placeholder="モデル名（空欄なら標準）" style="margin-top:10px"><p class="note" style="text-align:left">キーはこの端末のブラウザの中だけに保存され、AIの提供元以外には送られません。利用料や上限は、あなたのキーにかかります。</p><p class="note" style="text-align:left">Geminiは、Googleアカウントがあれば<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>で無料のキーを作れます（カード不要）。無料枠に送った文章は、Googleのサービス改善に使われることがあります。ChatGPT（OpenAI）のAPIキーは有料で、ChatGPTの契約とは別です。</p></div><button class="btn g" id="clr">履歴を全部消す</button>
+ <label>AIとの連携（任意・自分のAPIキー）</label><div class="chips" id="pv"></div><div id="pf"><input id="ak" class="nm" type="password" autocomplete="off" placeholder="APIキー" style="margin-top:10px"><input id="am" class="nm" placeholder="モデル名（空欄なら標準）" style="margin-top:10px"><p class="note" style="text-align:left">キーはこの端末のブラウザの中だけに保存され、AIの提供元以外には送られません。利用料や上限は、あなたのキーにかかります。</p><p class="note" style="text-align:left">Geminiは、Googleアカウントがあれば<a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>で無料のキーを作れます（カード不要）。無料枠に送った文章は、Googleのサービス改善に使われることがあります。ChatGPT（OpenAI）とClaude（Anthropic）のAPIキーは有料（従量課金）で、ChatGPTやClaudeアプリの契約とは別です。</p></div><button class="btn" id="sv">保存する</button><button class="btn g" id="dk">キーを削除</button><p class="note" id="svs" style="white-space:pre-line;text-align:left"></p><button class="btn g" id="clr">履歴を全部消す</button>
  <p class="note">動物たちはみんなフィクションです。</p></section>
 </div>
 <nav id="nav"><button data-t="home" aria-current="true"><b>⌂</b>ホーム</button><button data-t="hist"><b>📚</b>履歴</button><button data-t="chars"><b>🌈</b>キャラ紹介</button><button data-t="set"><b>⚙</b>設定</button></nav>
@@ -117,7 +117,7 @@ $('#ex').onclick=e=>{if(e.target.classList.contains('chip')){$('#inp').value=e.t
 function upd(){$('#n').textContent=$('#inp').value.length;$('#go').disabled=!$('#inp').value.trim()}
 $('#inp').oninput=upd;
 let aiFail=false,aiErr='';
-const DM={gemini:'gemini-2.5-flash-lite',openai:'gpt-5-mini',claude:'claude-haiku-5-5'};
+const DM={gemini:'gemini-3.1-flash-lite',openai:'gpt-5-mini',claude:'claude-haiku-5-5'};
 async function callAI(prompt){const a=ST.ai,m=a.model||DM[a.p];let r,j,tx;
  if(a.p==='gemini'){r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(m)+':generateContent?key='+encodeURIComponent(a.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseMimeType:'application/json'}})});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));j=await r.json();tx=j.candidates[0].content.parts[0].text}
  else if(a.p==='openai'){r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+a.key},body:JSON.stringify({model:m,messages:[{role:'user',content:prompt}],response_format:{type:'json_object'}})});if(!r.ok)throw new Error(r.status+' '+(await r.text()).slice(0,160));j=await r.json();tx=j.choices[0].message.content}
@@ -147,7 +147,7 @@ $('#go').onclick=async()=>{const t=$('#inp').value.trim().replace(/[。.！!]+$/
  $('#inp').value='';upd();$('#go').textContent='ほめてもらう！';praise(cur)};
 $('#more').onclick=async()=>{const b=$('#more');b.disabled=true;b.textContent='考え中…';
  const g=await gen(cur.t,cur.cat);aiFail=!!(g.fb&&ST.ai.p&&ST.ai.key);cur.msgs=g.msgs.sort(()=>Math.random()-.5);cur.title=g.title;cur.reason=g.reason;sv();praise(cur);b.disabled=false;b.textContent='もっとほめて'};
-function praise(e){cur=e;$('#pl').innerHTML=e.msgs.map(([i,m],k)=>'<div class="row" style="animation-delay:'+k*.5+'s"><div class="av">'+CH[i].svg+CH[i].n+'</div><div class="bub">'+esc(m)+'</div></div>').join('');$('#aiNote').hidden=!aiFail;$('#aiNote').textContent='AIにつながらなかったので、固定のセリフで表示しています。設定のキーとモデル名を確認してください。'+(aiErr?'［'+aiErr+'］':'');show('praise')}
+function praise(e){cur=e;$('#pl').innerHTML=e.msgs.map(([i,m],k)=>'<div class="row" style="animation-delay:'+k*.5+'s"><div class="av">'+CH[i].svg+CH[i].n+'</div><div class="bub">'+esc(m)+'</div></div>').join('');$('#aiNote').hidden=!aiFail;$('#aiNote').textContent=(aiErr.startsWith('429')?'AIの利用上限に達したので、固定のセリフで表示しています。しばらく待つとAIがまた使えます。':'AIにつながらなかったので、固定のセリフで表示しています。設定のキーとモデル名を確認してください。')+(aiErr?'［'+aiErr+'］':'');show('praise')}
 $('#toc').onclick=()=>{$('#cv').innerHTML='<canvas></canvas>';$('#sn').hidden=true;draw($('#cv canvas'),cur);show('cert')};
 $('#back').onclick=()=>{$('#inp').value='';upd();show('home')};
 const reiwa=d=>'令和'+(d.getFullYear()-2018)+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
@@ -197,12 +197,16 @@ $('#cl').innerHTML=CH.map(c=>'<div class="cd">'+c.svg+'<div><b>'+c.n+'</b> <span
 $('#nm').value=ST.name;$('#nm').oninput=()=>{ST.name=$('#nm').value.trim();sv()};
 function ra(){document.documentElement.dataset.ac=ST.ac;$('#ac').innerHTML=ACS.map(a=>'<button class="chip" data-a="'+a[0]+'" aria-pressed="'+(ST.ac===a[0])+'">'+a[1]+'</button>').join('')}
 $('#ac').onclick=e=>{if(e.target.dataset.a){ST.ac=e.target.dataset.a;sv();ra()}};ra();
-const PV=[['gemini','Gemini（無料キーあり）'],['openai','ChatGPT（OpenAI・有料）'],['claude','Claude'],['','使わない']];
+const PV=[['gemini','Gemini（無料キーあり）'],['openai','ChatGPT（OpenAI・有料）'],['claude','Claude（有料）'],['','使わない']];
 function rpv(){$('#pv').innerHTML=PV.map(a=>'<button class="chip" data-p="'+a[0]+'" aria-pressed="'+(ST.ai.p===a[0])+'">'+a[1]+'</button>').join('');$('#pf').classList.toggle('hid',!ST.ai.p);$('#ak').value=ST.ai.key;$('#am').value=ST.ai.model;$('#am').placeholder='モデル名（空欄なら '+(DM[ST.ai.p]||'')+'）'}
-$('#pv').onclick=e=>{if(e.target.dataset.p!==undefined){ST.ai.p=e.target.dataset.p;sv();rpv()}};
+$('#pv').onclick=e=>{if(e.target.dataset.p!==undefined){ST.ai.p=e.target.dataset.p;sv();rpv();$('#svs').textContent=rst()}};
 $('#ak').oninput=()=>{ST.ai.key=$('#ak').value.trim();sv()};$('#am').oninput=()=>{ST.ai.model=$('#am').value.trim();sv()};rpv();
+const rst=()=>{const a=ST.ai,n={gemini:'Gemini',openai:'ChatGPT',claude:'Claude','':'使わない'}[a.p];return '保存中の内容：\n名前＝'+(ST.name||'あなた')+'\nAI＝'+n+(a.p?'／'+(a.key?'キー設定済み（末尾'+a.key.slice(-4)+'）':'キー未設定')+'／モデル＝'+(a.model||DM[a.p]):'')};
+$('#sv').onclick=()=>{ST.name=$('#nm').value.trim();ST.ai.key=$('#ak').value.trim();ST.ai.model=$('#am').value.trim();sv();let ok=false;try{const j=JSON.parse(localStorage.getItem('hd')||'{}');ok=!!j.ai&&j.ai.key===ST.ai.key&&j.ai.p===ST.ai.p&&j.name===ST.name}catch(e){}
+ $('#svs').textContent=(ok?'✓ 保存しました。':'⚠ 保存できませんでした。ブラウザの設定でサイトデータが禁止されている可能性があります。')+'\n'+rst()};
+$('#dk').onclick=()=>{ST.ai.key='';$('#ak').value='';sv();$('#svs').textContent='キーを削除しました。\n'+rst()};
 $('#clr').onclick=()=>{ST.hist=[];sv();$('#clr').textContent='消しました'};
-$('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='hist')rh();show(b.dataset.t)};
+$('#nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.t==='hist')rh();if(b.dataset.t==='set')$('#svs').textContent=rst();show(b.dataset.t)};
 </script>
 </body>
 </html>
